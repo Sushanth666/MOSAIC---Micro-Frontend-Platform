@@ -24,7 +24,7 @@ Every business domain (Auth, Dashboard, Users, Analytics, Notifications) is buil
 1. [Executive Summary](#-executive-summary)
 2. [Architecture Overview](#-architecture-overview)
 3. [Federated Modules & Ports](#-federated-modules--ports)
-4. [Monorepo Project Structure](#-monorepo-project-structure)
+4. [Monorepo Project Structure & Architectural Layers](#-monorepo-project-structure--architectural-layers)
 5. [Core Architectural Pillars](#-core-architectural-pillars)
    - [1. True Module Federation (Native ESM)](#1-true-module-federation-native-esm)
    - [2. Asynchronous PubSub Communication (`shared-bus`)](#2-asynchronous-pubsub-communication-shared-bus)
@@ -112,73 +112,147 @@ Modern enterprise frontends often evolve into fragile monolithic codebases where
 
 ---
 
-## 📂 Monorepo Project Structure
+## 📂 Monorepo Project Structure & Architectural Layers
+
+The repository is structured as an **enterprise monorepo** managed via npm workspaces. Code is strictly separated into three architectural tiers: **Host Orchestrator**, **Domain Micro-Frontends (Remotes)**, and **Shared Core Packages**.
+
+```
++-------------------------------------------------------------------------------+
+|                            TIER 1: HOST ORCHESTRATOR                         |
+|  apps/host (Port 5000)                                                        |
+|  • Layout Shell  • Route Guards  • Federation Loader  • Global Command Palette|
++---------------------------------------+---------------------------------------+
+                                        |
+                      (Dynamic ESM Module Federation)
+                                        |
++---------------------------------------v---------------------------------------+
+|                       TIER 2: DOMAIN MICRO-FRONTENDS                          |
+|  apps/auth          apps/dashboard    apps/users   apps/analytics  apps/notif |
+|  (:5001)            (:5002)           (:5003)      (:5004)         (:5005)    |
+|  • Auth Gateway     • KPI Telemetry   • Directory  • Financial BI  • Incidents|
++---------------------------------------+---------------------------------------+
+                                        |
+                      (Zero-Bloat Singleton Dependencies)
+                                        |
++---------------------------------------v---------------------------------------+
+|                       TIER 3: SHARED INFRASTRUCTURE                           |
+|  packages/shared-ui                   packages/shared-bus                     |
+|  • Tokens, Buttons, Cards, Modals     • Typed PubSub EventBus & Event Names   |
+|  • Isolated ModuleErrorBoundary       • Reactive Auth & Mesh Stores           |
++-------------------------------------------------------------------------------+
+```
+
+### 📁 Annotated Monorepo Tree
 
 ```bash
 micro-frontend-dashboard/
-├── apps/
-│   ├── host/                     # Host Shell Application (Port 5000)
+├── apps/                                 # ─── TIER 1 & 2: WEB APPLICATIONS ───
+│   │
+│   ├── host/                             # [Port 5000] Platform Shell & Orchestrator
+│   │   ├── public/
+│   │   │   ├── favicon.ico               # Browser tab icon
+│   │   │   └── mosaic-logo.png           # 3D isometric amber platform logo
 │   │   ├── src/
-│   │   │   ├── components/       # Shell Layout, Navbars, ProfileModal, LogoutModal
-│   │   │   ├── App.jsx           # Dynamic Module Federation Routing & Guards
-│   │   │   └── main.jsx          # Shell Bootstrapper & Favicon Manager
-│   │   ├── index.html
-│   │   ├── vite.config.js        # Federation remotes configuration (:5001 - :5005)
+│   │   │   ├── components/               # Core Shell Components
+│   │   │   │   ├── HostLayout.jsx        # Persistent shell: Fixed sidebar, top navbar, status bar
+│   │   │   │   ├── LoginPage.jsx         # Full-screen auth gate & demo access screen
+│   │   │   │   ├── LogoutModal.jsx       # 2-step confirmation and 3s countdown modal
+│   │   │   │   ├── ProfileModal.jsx      # Profile manager, avatar picker, active sessions
+│   │   │   │   ├── CommandPalette.jsx    # Spotlight search (Cmd/Ctrl + K) navigation
+│   │   │   │   └── MeshInspector.jsx     # Live federation topology visualizer & chaos test
+│   │   │   ├── utils/
+│   │   │   │   └── loadRemote.jsx        # Resilient federated component loader & retry engine
+│   │   │   ├── App.jsx                   # Dynamic routes, lazy remote routing & auth guards
+│   │   │   ├── remotes.js                # Micro-frontend lazy bindings with monorepo fallback
+│   │   │   └── main.jsx                  # Shell bootstrapper, theme applicator & favicon setup
+│   │   ├── index.html                    # Root HTML document
+│   │   ├── vite.config.js                # Federation config: Consumes remotes (:5001-:5005)
+│   │   └── package.json                  # Dependencies: @mfe/shared-ui, @mfe/shared-bus
+│   │
+│   ├── auth/                             # [Port 5001] Authentication Remote
+│   │   ├── public/                       # Assets & branding
+│   │   ├── src/
+│   │   │   ├── AuthApp.jsx               # Exported Micro-Frontend: Sign In, Sign Up, 2FA
+│   │   │   └── main.jsx                  # Standalone runner for autonomous team dev
+│   │   ├── vite.config.js                # Exposes './AuthApp'
 │   │   └── package.json
 │   │
-│   ├── auth/                     # Authentication Remote (Port 5001)
+│   ├── dashboard/                        # [Port 5002] Telemetry & KPI Remote
 │   │   ├── src/
-│   │   │   ├── AuthApp.jsx       # Exported Federated Auth Micro-Frontend
-│   │   │   └── main.jsx          # Standalone Runner
-│   │   └── vite.config.js        # Exposes './AuthApp'
-│   │
-│   ├── dashboard/                # Telemetry & KPI Remote (Port 5002)
-│   │   ├── src/
-│   │   │   ├── DashboardApp.jsx  # Dual-matrix grids, PubSub actions, Live feed
-│   │   │   └── main.jsx          # Standalone Runner
-│   │   └── vite.config.js        # Exposes './DashboardApp'
-│   │
-│   ├── users/                    # Team Directory & RBAC Remote (Port 5003)
-│   │   ├── src/
-│   │   │   ├── UsersApp.jsx      # CRUD operations, Filters, RBAC Matrix Modal
-│   │   │   └── main.jsx          # Standalone Runner
-│   │   └── vite.config.js        # Exposes './UsersApp'
-│   │
-│   ├── analytics/                # Financial & Growth Analytics Remote (Port 5004)
-│   │   ├── src/
-│   │   │   ├── AnalyticsApp.jsx  # SVG Trends, Timeframe windows, CSV/JSON exporter
-│   │   │   └── main.jsx          # Standalone Runner
-│   │   └── vite.config.js        # Exposes './AnalyticsApp'
-│   │
-│   └── notifications/            # Incident Center Remote (Port 5005)
-│       ├── src/
-│       │   ├── NotificationsApp.jsx # Real-time feed, Category filters, Simulation
-│       │   └── main.jsx          # Standalone Runner
-│       └── vite.config.js        # Exposes './NotificationsApp'
-│
-├── packages/
-│   ├── shared-ui/                # Shared Design System Package
-│   │   ├── src/
-│   │   │   ├── tokens.css        # CSS Custom Properties, Colors, Animations
-│   │   │   ├── Button.jsx        # Standardized Button with icon/loading variants
-│   │   │   ├── Card.jsx          # Hoverable, interactive card with glow sweeps
-│   │   │   ├── Avatar.jsx        # Letter-initial avatar with deterministic gradients
-│   │   │   ├── Badge.jsx         # Status badges with continuous pulse radar dots
-│   │   │   ├── Modal.jsx         # Accessible portal modal dialogs
-│   │   │   ├── Input.jsx         # Input components with search & error states
-│   │   │   ├── Skeleton.jsx      # Shimmer loading placeholders
-│   │   │   ├── ErrorBoundary.jsx # Isolated module crash containment
-│   │   │   └── index.js          # Barrel exports
+│   │   │   ├── DashboardApp.jsx          # Exported Micro-Frontend: KPI cards, charts, stream
+│   │   │   └── main.jsx                  # Standalone runner
+│   │   ├── vite.config.js                # Exposes './DashboardApp'
 │   │   └── package.json
 │   │
-│   └── shared-bus/               # Event Bus & State Infrastructure
+│   ├── users/                            # [Port 5003] Team Directory & RBAC Remote
+│   │   ├── src/
+│   │   │   ├── UsersApp.jsx              # Exported Micro-Frontend: User tables, filters, RBAC
+│   │   │   └── main.jsx                  # Standalone runner
+│   │   ├── vite.config.js                # Exposes './UsersApp'
+│   │   └── package.json
+│   │
+│   ├── analytics/                        # [Port 5004] Financial & Growth Analytics Remote
+│   │   ├── src/
+│   │   │   ├── AnalyticsApp.jsx          # Exported Micro-Frontend: SVG charts, revenue, exports
+│   │   │   └── main.jsx                  # Standalone runner
+│   │   ├── vite.config.js                # Exposes './AnalyticsApp'
+│   │   └── package.json
+│   │
+│   └── notifications/                    # [Port 5005] Incident & Alert Center Remote
 │       ├── src/
-│       │   ├── index.js          # EventBus, MFE_EVENTS, authStore, meshStore, mockApi
-│       │   └── package.json
+│       │   ├── NotificationsApp.jsx      # Exported Micro-Frontend: Alert feed, priorities, test
+│       │   └── main.jsx                  # Standalone runner
+│       ├── vite.config.js                # Exposes './NotificationsApp'
+│       └── package.json
 │
-├── package.json                  # Root Monorepo Orchestration (npm workspaces)
-└── README.md                     # Technical Architecture & Setup Documentation
+├── packages/                             # ─── TIER 3: SHARED INTERNAL LIBRARIES ───
+│   │
+│   ├── shared-ui/                        # @mfe/shared-ui: Design System & Shared Components
+│   │   ├── src/
+│   │   │   ├── tokens.css                # CSS custom properties (colors, typography, radii, shadows)
+│   │   │   ├── Button.jsx                # Unified button component with variant and loading state
+│   │   │   ├── Card.jsx                  # Elevated card with hover micro-animations
+│   │   │   ├── Avatar.jsx                # Consistent user avatar with custom image & fallback
+│   │   │   ├── Badge.jsx                 # Status pills with glowing radar pulse dots
+│   │   │   ├── Modal.jsx                 # Accessible portal modal dialog with backdrop
+│   │   │   ├── Input.jsx                 # Styled input field with validation and icons
+│   │   │   ├── Switch.jsx                # Accessible toggle switch
+│   │   │   ├── Skeleton.jsx              # Shimmer loading placeholders for async states
+│   │   │   ├── ModuleErrorBoundary.jsx   # Per-remote failure containment & retry button
+│   │   │   └── index.js                  # Clean barrel export of all UI primitives
+│   │   └── package.json
+│   │
+│   └── shared-bus/                       # @mfe/shared-bus: Infrastructure, Events & State
+│       ├── src/
+│       │   └── index.js                  # Typed EventBus, MFE_EVENTS enum, authStore, meshStore
+│       └── package.json
+│
+├── mosaic-logo.png                       # High-resolution platform logo
+├── package.json                          # Root monorepo configuration (npm workspaces scripts)
+├── vercel.json                           # Multi-route production deployment config
+└── README.md                             # Architectural, operational & developer documentation
 ```
+
+### 📋 Monorepo Packages Quick Reference
+
+| Directory | Package Name | Dev Port | Scope / Responsibility | Federation Role |
+| :--- | :--- | :---: | :--- | :--- |
+| `apps/host` | `@mfe/host` | `5000` | Orchestrates shell layout, route guards, Spotlight, theme engine | **Host Consumer** (dynamically imports remotes) |
+| `apps/auth` | `@mfe/auth` | `5001` | Authentication gateway, login forms, session token generation | **Remote Provider** (exposes `./AuthApp`) |
+| `apps/dashboard` | `@mfe/dashboard` | `5002` | Telemetry KPIs, platform metrics, real-time activity stream | **Remote Provider** (exposes `./DashboardApp`) |
+| `apps/users` | `@mfe/users` | `5003` | Team directory, user profiles, RBAC permission matrices | **Remote Provider** (exposes `./UsersApp`) |
+| `apps/analytics` | `@mfe/analytics` | `5004` | Financial reporting, trend visualizers, data export | **Remote Provider** (exposes `./AnalyticsApp`) |
+| `apps/notifications` | `@mfe/notifications` | `5005` | System incident feeds, alert subscriptions, audit trails | **Remote Provider** (exposes `./NotificationsApp`) |
+| `packages/shared-ui` | `@mfe/shared-ui` | — | Atomic components, design tokens, isolated error boundary | **Shared Library** (compiled singleton) |
+| `packages/shared-bus` | `@mfe/shared-bus` | — | PubSub event bus, event contracts, cross-MFE reactive stores | **Shared Library** (compiled singleton) |
+
+### 🔒 Architectural Rules & Dependency Flow
+
+To maintain strict isolation and prevent monolithic entanglement, the codebase enforces three fundamental rules:
+
+1. **Remotes Are Completely Decoupled**: A remote application (`apps/*`) must **never** import from another remote application. There are zero direct compile-time or runtime code dependencies between remotes.
+2. **Cross-Domain Communication via PubSub Only**: When a remote needs to interact with another domain (e.g., `apps/users` creates a user and `apps/notifications` displays a toast), it publishes a typed event over `@mfe/shared-bus` using the `MFE_EVENTS` contract.
+3. **Shared Packages are Stateless Primitives**: `@mfe/shared-ui` contains only reusable UI presentation components and styling tokens. Business domain logic is kept strictly inside the relevant remote.
 
 ---
 
