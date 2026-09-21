@@ -766,6 +766,79 @@ export const mockApi = {
     return { success: true, id };
   },
 
+  async bulkDeleteUsers(ids = []) {
+    await new Promise((r) => setTimeout(r, 450));
+    let users = getStored(USERS_STORAGE_KEY, INITIAL_USERS);
+    const idSet = new Set(ids);
+    const deletedTargets = users.filter((u) => idSet.has(u.id));
+    users = users.filter((u) => !idSet.has(u.id));
+    setStored(USERS_STORAGE_KEY, users);
+
+    deletedTargets.forEach((target) => {
+      eventBus.emit(MFE_EVENTS.USER_DELETED, { id: target.id, user: target });
+    });
+
+    if (deletedTargets.length > 0) {
+      eventBus.emit(MFE_EVENTS.ACTIVITY_LOGGED, {
+        id: `act_${Date.now()}`,
+        user: authStore.getCurrentUser()?.name || 'Admin',
+        action: `bulk removed ${deletedTargets.length} member accounts`,
+        timestamp: 'Just now',
+        type: 'user'
+      });
+      eventBus.emit(MFE_EVENTS.NOTIFICATION_ADD, {
+        id: `notif_${Date.now()}`,
+        title: 'Batch Members Removed',
+        message: `Successfully deleted ${deletedTargets.length} members from workspace.`,
+        category: 'Team',
+        priority: 'warning',
+        timestamp: 'Just now',
+        read: false
+      });
+    }
+    return { success: true, count: deletedTargets.length };
+  },
+
+  async bulkUpdateUsers(ids = [], updates = {}) {
+    await new Promise((r) => setTimeout(r, 400));
+    let users = getStored(USERS_STORAGE_KEY, INITIAL_USERS);
+    const idSet = new Set(ids);
+    let updatedCount = 0;
+    users = users.map((u) => {
+      if (idSet.has(u.id)) {
+        updatedCount++;
+        const updated = { ...u, ...updates };
+        eventBus.emit(MFE_EVENTS.USER_UPDATED, updated);
+        return updated;
+      }
+      return u;
+    });
+    setStored(USERS_STORAGE_KEY, users);
+
+    if (updatedCount > 0) {
+      const fieldDesc = Object.entries(updates)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(', ');
+      eventBus.emit(MFE_EVENTS.ACTIVITY_LOGGED, {
+        id: `act_${Date.now()}`,
+        user: authStore.getCurrentUser()?.name || 'Admin',
+        action: `bulk updated ${updatedCount} members (${fieldDesc})`,
+        timestamp: 'Just now',
+        type: 'user'
+      });
+      eventBus.emit(MFE_EVENTS.NOTIFICATION_ADD, {
+        id: `notif_${Date.now()}`,
+        title: 'Batch Update Completed',
+        message: `Updated ${updatedCount} members to ${fieldDesc}.`,
+        category: 'Team',
+        priority: 'info',
+        timestamp: 'Just now',
+        read: false
+      });
+    }
+    return { success: true, count: updatedCount };
+  },
+
   // Notifications API
   getUnreadNotificationCountSync() {
     if (meshStore?.areAllApisOff && meshStore.areAllApisOff()) {

@@ -19,7 +19,13 @@ import {
   Eye,
   Check,
   X,
-  ShieldCheck
+  ShieldCheck,
+  Download,
+  UserCheck,
+  UserX,
+  SlidersHorizontal,
+  Layers,
+  CheckSquare
 } from 'lucide-react';
 import { Button, Card, Input, Badge, Modal, TableSkeleton, Avatar } from '@mfe/shared-ui';
 import { mockApi, eventBus, MFE_EVENTS, authStore, PERMISSIONS, meshStore } from '@mfe/shared-bus';
@@ -35,6 +41,16 @@ export default function UsersApp({ standalone = false }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [simulateError, setSimulateError] = useState(false);
+
+  // Multi-Select & Batch Operations State
+  const [selectedUserIds, setSelectedUserIds] = useState([]);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [isBulkStatusModalOpen, setIsBulkStatusModalOpen] = useState(false);
+  const [isBulkRoleModalOpen, setIsBulkRoleModalOpen] = useState(false);
+  const [bulkStatusTarget, setBulkStatusTarget] = useState('Active');
+  const [bulkRoleTarget, setBulkRoleTarget] = useState('Editor');
+  const [bulkActionSubmitting, setBulkActionSubmitting] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null); // { text, type }
 
   // Modals state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -108,6 +124,125 @@ export default function UsersApp({ standalone = false }) {
       unsubMesh();
     };
   }, []);
+
+  const showToast = (text, type = 'success') => {
+    setToastMessage({ text, type });
+    setTimeout(() => {
+      setToastMessage((cur) => (cur?.text === text ? null : cur));
+    }, 4000);
+  };
+
+  // Multi-Selection State Helpers
+  const currentPageUserIds = users.map((u) => u.id);
+  const isAllCurrentPageSelected =
+    currentPageUserIds.length > 0 &&
+    currentPageUserIds.every((id) => selectedUserIds.includes(id));
+  const isSomeCurrentPageSelected =
+    currentPageUserIds.some((id) => selectedUserIds.includes(id)) &&
+    !isAllCurrentPageSelected;
+
+  const handleToggleSelectAll = () => {
+    if (isAllCurrentPageSelected) {
+      // Unselect all on this page
+      setSelectedUserIds((prev) => prev.filter((id) => !currentPageUserIds.includes(id)));
+    } else {
+      // Select all on this page
+      setSelectedUserIds((prev) => Array.from(new Set([...prev, ...currentPageUserIds])));
+    }
+  };
+
+  const handleToggleUser = (userId) => {
+    setSelectedUserIds((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
+
+  const handleClearSelection = () => {
+    setSelectedUserIds([]);
+  };
+
+  const getSelectedUsers = () => {
+    return users.filter((u) => selectedUserIds.includes(u.id));
+  };
+
+  // Bulk Handlers
+  const handleBulkStatusChange = async (targetStatus) => {
+    if (selectedUserIds.length === 0) return;
+    setBulkActionSubmitting(true);
+    try {
+      const count = selectedUserIds.length;
+      await mockApi.bulkUpdateUsers(selectedUserIds, { status: targetStatus });
+      showToast(`Updated status to "${targetStatus}" for ${count} members`, 'success');
+      setIsBulkStatusModalOpen(false);
+      fetchUsers();
+    } catch (err) {
+      showToast(err.message || 'Failed to update users status', 'error');
+    } finally {
+      setBulkActionSubmitting(false);
+    }
+  };
+
+  const handleBulkRoleChange = async (targetRole) => {
+    if (selectedUserIds.length === 0) return;
+    setBulkActionSubmitting(true);
+    try {
+      const count = selectedUserIds.length;
+      await mockApi.bulkUpdateUsers(selectedUserIds, { role: targetRole });
+      showToast(`Assigned "${targetRole}" role to ${count} members`, 'success');
+      setIsBulkRoleModalOpen(false);
+      fetchUsers();
+    } catch (err) {
+      showToast(err.message || 'Failed to update users role', 'error');
+    } finally {
+      setBulkActionSubmitting(false);
+    }
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedUserIds.length === 0) return;
+    setBulkActionSubmitting(true);
+    try {
+      const count = selectedUserIds.length;
+      await mockApi.bulkDeleteUsers(selectedUserIds);
+      setSelectedUserIds([]);
+      setIsBulkDeleteModalOpen(false);
+      showToast(`Permanently deleted ${count} member accounts`, 'success');
+      fetchUsers();
+    } catch (err) {
+      showToast(err.message || 'Failed to delete selected members', 'error');
+    } finally {
+      setBulkActionSubmitting(false);
+    }
+  };
+
+  const handleExportSelected = () => {
+    const selectedList = getSelectedUsers();
+    if (selectedList.length === 0) {
+      showToast('No members selected to export', 'error');
+      return;
+    }
+
+    const headers = ['ID', 'Name', 'Email', 'Role', 'Title', 'Status', 'Joined'];
+    const rows = selectedList.map((u) => [
+      `"${u.id}"`,
+      `"${u.name}"`,
+      `"${u.email}"`,
+      `"${u.role}"`,
+      `"${u.title || ''}"`,
+      `"${u.status}"`,
+      `"${u.joined || ''}"`
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `mosaic-members-${selectedList.length}-export.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast(`Exported ${selectedList.length} members to CSV`, 'success');
+  };
 
   const openAddModal = () => {
     setFormName('');
@@ -473,46 +608,181 @@ export default function UsersApp({ standalone = false }) {
             )}
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
-              <thead>
-                <tr style={{ background: 'var(--mfe-bg-surface)', borderBottom: '1px solid var(--mfe-border)' }}>
-                  <th style={{ padding: '14px 20px', color: 'var(--mfe-text-secondary)', fontWeight: 600 }}>Member</th>
-                  <th style={{ padding: '14px 20px', color: 'var(--mfe-text-secondary)', fontWeight: 600 }}>Role</th>
-                  <th style={{ padding: '14px 20px', color: 'var(--mfe-text-secondary)', fontWeight: 600 }}>Title</th>
-                  <th style={{ padding: '14px 20px', color: 'var(--mfe-text-secondary)', fontWeight: 600 }}>Status</th>
-                  <th style={{ padding: '14px 20px', color: 'var(--mfe-text-secondary)', fontWeight: 600 }}>Joined</th>
-                  <th style={{ padding: '14px 20px', color: 'var(--mfe-text-secondary)', fontWeight: 600, textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u, i) => (
-                  <tr
-                    key={u.id}
+          <div>
+            {/* Batch Action Toolbar when multiple members are selected */}
+            {selectedUserIds.length > 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
+                  padding: '12px 20px',
+                  background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(147, 51, 234, 0.08) 100%)',
+                  borderBottom: '1px solid var(--mfe-primary-glow)',
+                  borderLeft: '4px solid var(--mfe-primary)',
+                  animation: 'mfe-slide-down 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div
                     style={{
-                      borderBottom: '1px solid var(--mfe-border)',
-                      animationDelay: `${i * 0.04}s`
+                      width: '26px',
+                      height: '26px',
+                      borderRadius: '6px',
+                      background: 'var(--mfe-primary-gradient)',
+                      color: '#07090e',
+                      fontWeight: 800,
+                      fontSize: '0.8125rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
                     }}
-                    className="mfe-table-row mfe-animate-in"
                   >
-                    <td style={{ padding: '14px 20px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <Avatar
-                          src="initials"
-                          name={u.name}
-                          size={36}
-                          status={u.status === 'Active' ? 'online' : u.status === 'Pending' ? 'busy' : 'offline'}
-                        />
-                        <div>
-                          <div style={{ fontWeight: 700, color: 'var(--mfe-text-primary)' }}>
-                            {u.name}
+                    {selectedUserIds.length}
+                  </div>
+                  <div>
+                    <span style={{ fontWeight: 700, color: 'var(--mfe-text-primary)', fontSize: '0.875rem' }}>
+                      {selectedUserIds.length} {selectedUserIds.length === 1 ? 'member' : 'members'} selected
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--mfe-text-secondary)', marginLeft: '8px' }}>
+                      Choose a batch operation
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+                  {canEdit && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon={UserCheck}
+                      onClick={() => setIsBulkStatusModalOpen(true)}
+                    >
+                      Update Status
+                    </Button>
+                  )}
+
+                  {canEdit && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon={Shield}
+                      onClick={() => setIsBulkRoleModalOpen(true)}
+                    >
+                      Assign Role
+                    </Button>
+                  )}
+
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={Download}
+                    onClick={handleExportSelected}
+                  >
+                    Export CSV
+                  </Button>
+
+                  {canDelete && (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      icon={Trash2}
+                      onClick={() => setIsBulkDeleteModalOpen(true)}
+                    >
+                      Delete ({selectedUserIds.length})
+                    </Button>
+                  )}
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon={X}
+                    onClick={handleClearSelection}
+                  >
+                    Deselect
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+                <thead>
+                  <tr style={{ background: 'var(--mfe-bg-surface)', borderBottom: '1px solid var(--mfe-border)' }}>
+                    <th style={{ padding: '14px 16px', width: '46px', textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={isAllCurrentPageSelected}
+                        ref={(el) => {
+                          if (el) el.indeterminate = isSomeCurrentPageSelected;
+                        }}
+                        onChange={handleToggleSelectAll}
+                        title={isAllCurrentPageSelected ? 'Deselect all on this page' : 'Select all on this page'}
+                        style={{
+                          width: '17px',
+                          height: '17px',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          accentColor: 'var(--mfe-primary)'
+                        }}
+                      />
+                    </th>
+                    <th style={{ padding: '14px 20px', color: 'var(--mfe-text-secondary)', fontWeight: 600 }}>Member</th>
+                    <th style={{ padding: '14px 20px', color: 'var(--mfe-text-secondary)', fontWeight: 600 }}>Role</th>
+                    <th style={{ padding: '14px 20px', color: 'var(--mfe-text-secondary)', fontWeight: 600 }}>Title</th>
+                    <th style={{ padding: '14px 20px', color: 'var(--mfe-text-secondary)', fontWeight: 600 }}>Status</th>
+                    <th style={{ padding: '14px 20px', color: 'var(--mfe-text-secondary)', fontWeight: 600 }}>Joined</th>
+                    <th style={{ padding: '14px 20px', color: 'var(--mfe-text-secondary)', fontWeight: 600, textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u, i) => {
+                    const isSelected = selectedUserIds.includes(u.id);
+                    return (
+                      <tr
+                        key={u.id}
+                        style={{
+                          borderBottom: '1px solid var(--mfe-border)',
+                          animationDelay: `${i * 0.04}s`,
+                          backgroundColor: isSelected ? 'var(--mfe-bg-active)' : undefined
+                        }}
+                        className={`mfe-table-row mfe-animate-in ${isSelected ? 'row-selected' : ''}`}
+                      >
+                        <td style={{ padding: '14px 16px', width: '46px', textAlign: 'center' }}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleUser(u.id)}
+                            title={`Select ${u.name}`}
+                            style={{
+                              width: '17px',
+                              height: '17px',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              accentColor: 'var(--mfe-primary)'
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '14px 20px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <Avatar
+                              src="initials"
+                              name={u.name}
+                              size={36}
+                              status={u.status === 'Active' ? 'online' : u.status === 'Pending' ? 'busy' : 'offline'}
+                            />
+                            <div>
+                              <div style={{ fontWeight: 700, color: 'var(--mfe-text-primary)' }}>
+                                {u.name}
+                              </div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--mfe-text-muted)' }}>
+                                {u.email}
+                              </div>
+                            </div>
                           </div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--mfe-text-muted)' }}>
-                            {u.email}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
+                        </td>
 
                     <td style={{ padding: '14px 20px' }}>
                       <Badge variant={getRoleBadgeVariant(u.role)} size="sm">
@@ -610,9 +880,10 @@ export default function UsersApp({ standalone = false }) {
                       </div>
                     </td>
                   </tr>
-                ))}
+                );
+              })}
               </tbody>
-            </table>
+              </table>
 
             {/* Pagination Controls */}
             <div
@@ -653,7 +924,8 @@ export default function UsersApp({ standalone = false }) {
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
       </Card>
 
       {/* Add User Modal */}
@@ -942,7 +1214,323 @@ export default function UsersApp({ standalone = false }) {
         </div>
       </Modal>
 
+      {/* Bulk Status Update Modal */}
+      <Modal
+        isOpen={isBulkStatusModalOpen}
+        onClose={() => setIsBulkStatusModalOpen(false)}
+        title="Batch Update Member Status"
+        subtitle={`Change the platform lifecycle status for ${selectedUserIds.length} selected member${selectedUserIds.length === 1 ? '' : 's'}`}
+        maxWidth="500px"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsBulkStatusModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              icon={UserCheck}
+              isLoading={bulkActionSubmitting}
+              onClick={() => handleBulkStatusChange(bulkStatusTarget)}
+            >
+              Apply Status to {selectedUserIds.length} Members
+            </Button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Target Status Choice */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--mfe-text-secondary)' }}>
+              Select Target Status
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+              {[
+                { val: 'Active', label: 'Active', color: 'var(--mfe-success)', desc: 'Full workspace access' },
+                { val: 'Pending', label: 'Pending', color: 'var(--mfe-warning)', desc: 'Awaiting verification' },
+                { val: 'Suspended', label: 'Suspended', color: 'var(--mfe-danger)', desc: 'Sign-in restricted' }
+              ].map((st) => (
+                <div
+                  key={st.val}
+                  onClick={() => setBulkStatusTarget(st.val)}
+                  style={{
+                    padding: '12px 14px',
+                    borderRadius: 'var(--mfe-radius-md)',
+                    border: bulkStatusTarget === st.val ? '2px solid var(--mfe-primary)' : '1px solid var(--mfe-border)',
+                    background: bulkStatusTarget === st.val ? 'var(--mfe-bg-active)' : 'var(--mfe-bg-surface)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--mfe-text-primary)' }}>
+                      {st.label}
+                    </span>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: st.color }} />
+                  </div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--mfe-text-muted)' }}>
+                    {st.desc}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Selected Members Preview */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--mfe-text-secondary)' }}>
+              Affected Members ({selectedUserIds.length}):
+            </span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '120px', overflowY: 'auto', padding: '8px', background: 'var(--mfe-bg-surface)', borderRadius: 'var(--mfe-radius-sm)', border: '1px solid var(--mfe-border)' }}>
+              {getSelectedUsers().map((u) => (
+                <span
+                  key={u.id}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '4px 8px',
+                    borderRadius: 'var(--mfe-radius-full)',
+                    background: 'var(--mfe-bg-card)',
+                    border: '1px solid var(--mfe-border)',
+                    fontSize: '0.75rem',
+                    color: 'var(--mfe-text-primary)',
+                    fontWeight: 600
+                  }}
+                >
+                  <Avatar src="initials" name={u.name} size={16} />
+                  {u.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Bulk Role Assignment Modal */}
+      <Modal
+        isOpen={isBulkRoleModalOpen}
+        onClose={() => setIsBulkRoleModalOpen(false)}
+        title="Batch Assign Workspace Role"
+        subtitle={`Update access control privileges for ${selectedUserIds.length} selected member${selectedUserIds.length === 1 ? '' : 's'}`}
+        maxWidth="500px"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsBulkRoleModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              icon={Shield}
+              isLoading={bulkActionSubmitting}
+              onClick={() => handleBulkRoleChange(bulkRoleTarget)}
+            >
+              Assign "{bulkRoleTarget}" to {selectedUserIds.length} Members
+            </Button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Target Role Choice */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--mfe-text-secondary)' }}>
+              Select Target Role
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+              {[
+                { val: 'Admin', label: 'Admin', color: 'var(--mfe-danger)', desc: 'Complete administrative access' },
+                { val: 'Editor', label: 'Editor', color: 'var(--mfe-primary)', desc: 'Operational user management' },
+                { val: 'Viewer', label: 'Viewer', color: 'var(--mfe-info)', desc: 'Read-only telemetry inspection' }
+              ].map((r) => (
+                <div
+                  key={r.val}
+                  onClick={() => setBulkRoleTarget(r.val)}
+                  style={{
+                    padding: '12px 14px',
+                    borderRadius: 'var(--mfe-radius-md)',
+                    border: bulkRoleTarget === r.val ? '2px solid var(--mfe-primary)' : '1px solid var(--mfe-border)',
+                    background: bulkRoleTarget === r.val ? 'var(--mfe-bg-active)' : 'var(--mfe-bg-surface)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--mfe-text-primary)' }}>
+                      {r.label}
+                    </span>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: r.color }} />
+                  </div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--mfe-text-muted)' }}>
+                    {r.desc}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Selected Members Preview */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--mfe-text-secondary)' }}>
+              Affected Members ({selectedUserIds.length}):
+            </span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '120px', overflowY: 'auto', padding: '8px', background: 'var(--mfe-bg-surface)', borderRadius: 'var(--mfe-radius-sm)', border: '1px solid var(--mfe-border)' }}>
+              {getSelectedUsers().map((u) => (
+                <span
+                  key={u.id}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '4px 8px',
+                    borderRadius: 'var(--mfe-radius-full)',
+                    background: 'var(--mfe-bg-card)',
+                    border: '1px solid var(--mfe-border)',
+                    fontSize: '0.75rem',
+                    color: 'var(--mfe-text-primary)',
+                    fontWeight: 600
+                  }}
+                >
+                  <Avatar src="initials" name={u.name} size={16} />
+                  {u.name} ({u.role})
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Bulk Delete Confirmation Modal */}
+      <Modal
+        isOpen={isBulkDeleteModalOpen}
+        onClose={() => setIsBulkDeleteModalOpen(false)}
+        title="Batch Revoke Member Accounts"
+        subtitle={`Permanently delete ${selectedUserIds.length} collaborator account${selectedUserIds.length === 1 ? '' : 's'}`}
+        maxWidth="500px"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsBulkDeleteModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              icon={Trash2}
+              isLoading={bulkActionSubmitting}
+              onClick={handleBulkDeleteConfirm}
+            >
+              Permanently Delete ({selectedUserIds.length})
+            </Button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div
+            style={{
+              padding: '12px 16px',
+              borderRadius: 'var(--mfe-radius-md)',
+              background: 'var(--mfe-danger-bg)',
+              border: '1px solid var(--mfe-danger)',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '12px'
+            }}
+          >
+            <AlertTriangle size={20} color="var(--mfe-danger)" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div>
+              <div style={{ fontWeight: 700, color: 'var(--mfe-danger)', fontSize: '0.875rem' }}>
+                Irreversible Destructive Action
+              </div>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--mfe-text-secondary)', marginTop: '2px', lineHeight: 1.4 }}>
+                Are you sure you want to permanently delete these <strong>{selectedUserIds.length}</strong> collaborator accounts? All associated access tokens and permissions will be invalidated across all micro-frontends.
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--mfe-text-secondary)' }}>
+              Members to be removed:
+            </span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '120px', overflowY: 'auto', padding: '8px', background: 'var(--mfe-bg-surface)', borderRadius: 'var(--mfe-radius-sm)', border: '1px solid var(--mfe-border)' }}>
+              {getSelectedUsers().map((u) => (
+                <span
+                  key={u.id}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '4px 8px',
+                    borderRadius: 'var(--mfe-radius-full)',
+                    background: 'var(--mfe-bg-card)',
+                    border: '1px solid var(--mfe-border)',
+                    fontSize: '0.75rem',
+                    color: 'var(--mfe-danger)',
+                    fontWeight: 600
+                  }}
+                >
+                  <Avatar src="initials" name={u.name} size={16} />
+                  {u.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Floating Toast Notification */}
+      {toastMessage && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '12px 18px',
+            borderRadius: 'var(--mfe-radius-md)',
+            background: toastMessage.type === 'error' ? 'var(--mfe-danger)' : 'var(--mfe-success)',
+            color: '#ffffff',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+            fontWeight: 600,
+            fontSize: '0.875rem',
+            animation: 'mfe-scale-in 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+          }}
+        >
+          {toastMessage.type === 'error' ? <AlertCircle size={18} /> : <CheckCircle2 size={18} />}
+          <span>{toastMessage.text}</span>
+          <button
+            type="button"
+            onClick={() => setToastMessage(null)}
+            style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', marginLeft: '6px' }}
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       <style>{`
+        .mfe-table-row {
+          transition: background-color 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease !important;
+        }
+        .mfe-table-row:hover {
+          background-color: var(--mfe-bg-card-hover) !important;
+          transform: translateX(4px);
+        }
+        .mfe-table-row.row-selected {
+          background-color: var(--mfe-bg-active) !important;
+        }
+        .table-action-btn {
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .table-action-btn:hover {
+          background-color: var(--mfe-bg-active);
+          transform: scale(1.18);
+        }
         .mfe-table-row {
           transition: background-color 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease !important;
         }
