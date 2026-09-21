@@ -13,11 +13,12 @@ import { authStore, eventBus, MFE_EVENTS, DEMO_USERS } from '@mfe/shared-bus';
 
 /**
  * Shell-level Authentication Guard:
- * Ensures user is authenticated; auto-provisions demo admin so landing opens Dashboard directly.
+ * If user is not authenticated in the Shell, immediately redirects to /login.
+ * Ensures micro-frontends are NEVER loaded or rendered for unauthenticated sessions.
  */
 function RequireAuth({ children, currentUser }) {
   if (!currentUser) {
-    authStore.login(DEMO_USERS[0]);
+    return <Navigate to="/login" replace />;
   }
   return children;
 }
@@ -34,8 +35,8 @@ function PublicOnlyRoute({ children, currentUser }) {
 }
 
 function HostRoutes({ theme, toggleTheme }) {
-  const [currentUser, setCurrentUser] = useState(() => authStore.getCurrentUser() || DEMO_USERS[0]);
-  const [authToken, setAuthToken] = useState(() => authStore.getAuthToken() || 'mock-mfe-jwt-token-998811');
+  const [currentUser, setCurrentUser] = useState(() => authStore.getCurrentUser());
+  const [authToken, setAuthToken] = useState(() => authStore.getAuthToken());
   const navigate = useNavigate();
 
   useEffect(() => {

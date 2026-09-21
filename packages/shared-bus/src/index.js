@@ -193,15 +193,15 @@ export const ROLE_PERMISSIONS = {
 
 export const authStore = {
   getCurrentUser() {
-    if (typeof window === 'undefined') return DEMO_USERS[0];
+    if (typeof window === 'undefined') return null;
     try {
       const raw = localStorage.getItem(AUTH_STORAGE_KEY);
       if (!raw || raw === 'guest' || raw === 'null') {
-        return DEMO_USERS[0];
+        return null;
       }
       return JSON.parse(raw);
     } catch {
-      return DEMO_USERS[0];
+      return null;
     }
   },
 
