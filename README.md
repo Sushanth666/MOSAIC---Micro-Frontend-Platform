@@ -1,12 +1,19 @@
-# 🌐 MOSAIC • Enterprise Micro-Frontend Platform
+<div align="center">
+  <img src="./mosaic-logo.png" alt="MOSAIC Logo" width="128" height="128" />
+  <h1>MOSAIC • Enterprise Micro-Frontend Platform</h1>
 
-[![React](https://img.shields.io/badge/React-18.3.1-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Module Federation](https://img.shields.io/badge/Module%20Federation-Vite%20Plugin-orange)](https://github.com/originjs/vite-plugin-federation)
-[![Architecture](https://img.shields.io/badge/Architecture-Event--Driven%20Micro--Frontends-emerald)](#-architecture-overview)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+  <p>
+    <strong>Production-grade, enterprise-scale Micro-Frontend Platform engineered with React, Vite Module Federation, and Asynchronous Decoupled PubSub State Architecture.</strong>
+  </p>
 
-A production-grade, enterprise-scale **Micro-Frontend Dashboard Platform** engineered with **React**, **Vite Module Federation**, and an **Asynchronous Decoupled PubSub State Architecture**.
+  <p>
+    <a href="https://reactjs.org/"><img src="https://img.shields.io/badge/React-18.3.1-61DAFB?logo=react&logoColor=black" alt="React" /></a>
+    <a href="https://vitejs.dev/"><img src="https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite&logoColor=white" alt="Vite" /></a>
+    <a href="https://github.com/originjs/vite-plugin-federation"><img src="https://img.shields.io/badge/Module%20Federation-Vite%20Plugin-orange" alt="Module Federation" /></a>
+    <a href="#-architecture-overview"><img src="https://img.shields.io/badge/Architecture-Event--Driven%20Micro--Frontends-emerald" alt="Architecture" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License" /></a>
+  </p>
+</div>
 
 Every business domain (Auth, Dashboard, Users, Analytics, Notifications) is built, tested, and deployable as an **independent web application** on its own port, while dynamically orchestrating into a unified, ultra-responsive host shell at runtime with zero page reloads.
 
