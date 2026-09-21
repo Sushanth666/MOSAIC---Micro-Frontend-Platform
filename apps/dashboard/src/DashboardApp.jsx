@@ -1524,55 +1524,55 @@ export default function DashboardApp({ standalone = false, onNavigate }) {
                     marginBottom: '8px',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px'
+                    gap: '7px'
                   }}
                 >
-                  <Zap size={12} color="var(--mfe-primary)" />
+                  <Zap size={14} color="var(--mfe-primary)" />
                   <span>Instant Payload Presets</span>
                 </div>
 
-                <div className="mfe-action-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                <div className="mfe-action-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="md"
                     icon={ShieldCheck}
                     onClick={handleTriggerSecurityScan}
                     title="Broadcast zero-trust security audit across 5 remotes"
-                    style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px' }}
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '10px 14px', fontSize: '0.82rem' }}
                   >
                     Security Audit
                   </Button>
 
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="md"
                     icon={HardDrive}
                     onClick={handleFlushMeshCache}
                     title="Flush distributed cross-remote cache buffers"
-                    style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px' }}
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '10px 14px', fontSize: '0.82rem' }}
                   >
                     Flush Cache
                   </Button>
 
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="md"
                     icon={Radio}
                     onClick={handleBroadcastGlobalToast}
                     title="Broadcast global announcement to all active sessions"
-                    style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px' }}
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '10px 14px', fontSize: '0.82rem' }}
                   >
                     Global Toast
                   </Button>
 
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="md"
                     icon={Activity}
                     onClick={handlePingRemotes}
                     disabled={isPinging}
                     title="Ping all 5 federated remote nodes and measure latency"
-                    style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px' }}
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '10px 14px', fontSize: '0.82rem' }}
                   >
                     {isPinging ? 'Pinging...' : 'Heartbeat Ping'}
                   </Button>
@@ -1605,65 +1605,65 @@ export default function DashboardApp({ standalone = false, onNavigate }) {
               <div>
                 <div
                   style={{
-                    fontSize: '0.6875rem',
+                    fontSize: '0.75rem',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',
                     color: 'var(--mfe-text-muted)',
-                    marginBottom: '8px',
+                    marginBottom: '10px',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px'
+                    gap: '7px'
                   }}
                 >
-                  <Radio size={12} color="var(--mfe-accent)" />
+                  <Radio size={14} color="var(--mfe-accent)" />
                   <span>PubSub Event Broadcasters</span>
                 </div>
 
-                <div className="mfe-action-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                <div className="mfe-action-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                   <Button
                     variant="secondary"
-                    size="sm"
+                    size="md"
                     icon={BellRing}
                     onClick={handleSimulateQuickAlert}
                     title="Broadcast incident notification to Notifications MFE (:5005)"
-                    style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px' }}
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '11px 16px', fontSize: '0.84rem' }}
                   >
                     Broadcast Alert
                   </Button>
 
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="md"
                     icon={RefreshCw}
                     onClick={handleSyncTelemetry}
                     disabled={isSyncingTelemetry}
                     title="Sync telemetry streams and refresh KPIs across mesh"
-                    style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px' }}
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '11px 16px', fontSize: '0.84rem' }}
                   >
                     {isSyncingTelemetry ? 'Syncing...' : 'Sync Telemetry'}
                   </Button>
 
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="md"
                     icon={UserPlus}
                     onClick={handleSimulateFastUser}
                     disabled={isSimulatingUser}
                     title="Provision a new federated team member into User Management (:5003)"
-                    style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px' }}
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '11px 16px', fontSize: '0.84rem' }}
                   >
                     {isSimulatingUser ? 'Provisioning...' : 'Provision User'}
                   </Button>
 
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="md"
                     icon={Trash2}
                     onClick={handlePurgeNotifications}
                     disabled={isPurgingNotifs}
                     title="Clear notification queue across the mesh"
-                    style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px' }}
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '11px 16px', fontSize: '0.84rem' }}
                   >
                     {isPurgingNotifs ? 'Purging...' : 'Purge Alerts'}
                   </Button>
@@ -1671,25 +1671,25 @@ export default function DashboardApp({ standalone = false, onNavigate }) {
               </div>
 
               {/* Cluster 2: Cross-Remote Navigators */}
-              <div style={{ paddingTop: '10px', borderTop: '1px solid var(--mfe-border-subtle)' }}>
+              <div style={{ paddingTop: '12px', borderTop: '1px solid var(--mfe-border-subtle)' }}>
                 <div
                   style={{
-                    fontSize: '0.6875rem',
+                    fontSize: '0.75rem',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',
                     color: 'var(--mfe-text-muted)',
-                    marginBottom: '8px',
+                    marginBottom: '10px',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px'
+                    gap: '7px'
                   }}
                 >
-                  <Globe size={12} color="var(--mfe-primary)" />
+                  <Globe size={14} color="var(--mfe-primary)" />
                   <span>Federated Remote Navigators</span>
                 </div>
 
-                <div className="mfe-action-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                <div className="mfe-action-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                   <button
                     type="button"
                     onClick={() => (onNavigate ? onNavigate('/users') : (window.location.pathname = '/users'))}
@@ -1698,23 +1698,23 @@ export default function DashboardApp({ standalone = false, onNavigate }) {
                       background: 'var(--mfe-bg-surface)',
                       border: '1px solid var(--mfe-border)',
                       borderRadius: 'var(--mfe-radius-md)',
-                      padding: '8px 12px',
+                      padding: '11px 16px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       width: '100%',
                       cursor: 'pointer',
                       color: 'var(--mfe-text-primary)',
-                      fontSize: '0.75rem',
+                      fontSize: '0.84rem',
                       fontWeight: 600,
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Users size={14} color="var(--mfe-primary)" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+                      <Users size={16} color="var(--mfe-primary)" />
                       <span>User Management</span>
                     </div>
-                    <span style={{ fontSize: '0.6875rem', color: 'var(--mfe-text-muted)', background: 'var(--mfe-bg-card)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--mfe-border)' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--mfe-text-muted)', background: 'var(--mfe-bg-card)', padding: '3px 8px', borderRadius: '5px', border: '1px solid var(--mfe-border)', fontWeight: 600 }}>
                       :5003
                     </span>
                   </button>
@@ -1727,23 +1727,23 @@ export default function DashboardApp({ standalone = false, onNavigate }) {
                       background: 'var(--mfe-bg-surface)',
                       border: '1px solid var(--mfe-border)',
                       borderRadius: 'var(--mfe-radius-md)',
-                      padding: '8px 12px',
+                      padding: '11px 16px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       width: '100%',
                       cursor: 'pointer',
                       color: 'var(--mfe-text-primary)',
-                      fontSize: '0.75rem',
+                      fontSize: '0.84rem',
                       fontWeight: 600,
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <TrendingUp size={14} color="var(--mfe-accent)" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+                      <TrendingUp size={16} color="var(--mfe-accent)" />
                       <span>Analytics Engine</span>
                     </div>
-                    <span style={{ fontSize: '0.6875rem', color: 'var(--mfe-text-muted)', background: 'var(--mfe-bg-card)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--mfe-border)' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--mfe-text-muted)', background: 'var(--mfe-bg-card)', padding: '3px 8px', borderRadius: '5px', border: '1px solid var(--mfe-border)', fontWeight: 600 }}>
                       :5004
                     </span>
                   </button>
@@ -1756,23 +1756,23 @@ export default function DashboardApp({ standalone = false, onNavigate }) {
                       background: 'var(--mfe-bg-surface)',
                       border: '1px solid var(--mfe-border)',
                       borderRadius: 'var(--mfe-radius-md)',
-                      padding: '8px 12px',
+                      padding: '11px 16px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       width: '100%',
                       cursor: 'pointer',
                       color: 'var(--mfe-text-primary)',
-                      fontSize: '0.75rem',
+                      fontSize: '0.84rem',
                       fontWeight: 600,
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <BellRing size={14} color="var(--mfe-warning)" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+                      <BellRing size={16} color="var(--mfe-warning)" />
                       <span>Incident Center</span>
                     </div>
-                    <span style={{ fontSize: '0.6875rem', color: 'var(--mfe-text-muted)', background: 'var(--mfe-bg-card)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--mfe-border)' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--mfe-text-muted)', background: 'var(--mfe-bg-card)', padding: '3px 8px', borderRadius: '5px', border: '1px solid var(--mfe-border)', fontWeight: 600 }}>
                       :5005
                     </span>
                   </button>
@@ -1785,23 +1785,23 @@ export default function DashboardApp({ standalone = false, onNavigate }) {
                       background: 'var(--mfe-bg-surface)',
                       border: '1px solid var(--mfe-border)',
                       borderRadius: 'var(--mfe-radius-md)',
-                      padding: '8px 12px',
+                      padding: '11px 16px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       width: '100%',
                       cursor: 'pointer',
                       color: 'var(--mfe-text-primary)',
-                      fontSize: '0.75rem',
+                      fontSize: '0.84rem',
                       fontWeight: 600,
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Network size={14} color="var(--mfe-success)" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+                      <Network size={16} color="var(--mfe-success)" />
                       <span>Mesh Topology</span>
                     </div>
-                    <span style={{ fontSize: '0.6875rem', color: 'var(--mfe-text-muted)', background: 'var(--mfe-bg-card)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--mfe-border)' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--mfe-text-muted)', background: 'var(--mfe-bg-card)', padding: '3px 8px', borderRadius: '5px', border: '1px solid var(--mfe-border)', fontWeight: 600 }}>
                       :5000
                     </span>
                   </button>
