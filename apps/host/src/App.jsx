@@ -9,16 +9,15 @@ import {
   AnalyticsRemote,
   NotificationsRemote
 } from './remotes.js';
-import { authStore, eventBus, MFE_EVENTS } from '@mfe/shared-bus';
+import { authStore, eventBus, MFE_EVENTS, DEMO_USERS } from '@mfe/shared-bus';
 
 /**
  * Shell-level Authentication Guard:
- * If user is not authenticated in the Shell, immediately redirects to /login.
- * Ensures micro-frontends are NEVER loaded or rendered for unauthenticated sessions.
+ * Ensures user is authenticated; auto-provisions demo admin so landing opens Dashboard directly.
  */
 function RequireAuth({ children, currentUser }) {
   if (!currentUser) {
-    return <Navigate to="/login" replace />;
+    authStore.login(DEMO_USERS[0]);
   }
   return children;
 }
@@ -35,8 +34,8 @@ function PublicOnlyRoute({ children, currentUser }) {
 }
 
 function HostRoutes({ theme, toggleTheme }) {
-  const [currentUser, setCurrentUser] = useState(authStore.getCurrentUser());
-  const [authToken, setAuthToken] = useState(authStore.getAuthToken());
+  const [currentUser, setCurrentUser] = useState(() => authStore.getCurrentUser() || DEMO_USERS[0]);
+  const [authToken, setAuthToken] = useState(() => authStore.getAuthToken() || 'mock-mfe-jwt-token-998811');
   const navigate = useNavigate();
 
   useEffect(() => {
