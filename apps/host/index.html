@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Mosaic Micro-Frontend Platform - Scalable enterprise platform with Module Federation, React, and decoupled state" />
+    <title>MOSAIC • Micro-Frontend Platform</title>
+    <link rel="icon" type="image/png" href="/mosaic-logo.png?v=clean" />
+    <link rel="shortcut icon" type="image/png" href="/mosaic-logo.png?v=clean" />
+    <link rel="apple-touch-icon" href="/mosaic-logo.png?v=clean" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script>
+      // Moving text marquee animation in browser tab title
+      (function() {
+        var baseTitle = '✦ MOSAIC • Micro-Frontend Platform ✦ High-Speed Enterprise Architecture ✦ ';
+        var idx = 0;
+        setInterval(function() {
+          document.title = baseTitle.substring(idx) + baseTitle.substring(0, idx);
+          idx = (idx + 1) % baseTitle.length;
+        }, 260);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "micro-frontend-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-grade Micro-Frontend Dashboard with React and Module Federation",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -c \"cyan,magenta,green,yellow,blue,red\" -n \"host,auth,dash,users,analy,notif\" \"npm run dev --workspace=@mfe/host\" \"npm run dev --workspace=@mfe/auth\" \"npm run dev --workspace=@mfe/dashboard\" \"npm run dev --workspace=@mfe/users\" \"npm run dev --workspace=@mfe/analytics\" \"npm run dev --workspace=@mfe/notifications\"",
+    "build": "npm run build --workspaces --if-present",
+    "preview": "concurrently -k -c \"cyan,magenta,green,yellow,blue,red\" -n \"host,auth,dash,users,analy,notif\" \"npm run preview --workspace=@mfe/host\" \"npm run preview --workspace=@mfe/auth\" \"npm run preview --workspace=@mfe/dashboard\" \"npm run preview --workspace=@mfe/users\" \"npm run preview --workspace=@mfe/analytics\" \"npm run preview --workspace=@mfe/notifications\"",
+    "clean": "node -e \"console.log('Cleaning builds...')\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
