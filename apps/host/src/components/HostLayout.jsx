@@ -369,6 +369,23 @@ export function HostLayout({ children, theme, onToggleTheme }) {
               <ChevronLeft size={18} />
             </button>
           )}
+
+          {/* Mobile explicit close button */}
+          <button
+            onClick={() => setMobileOpen(false)}
+            style={{
+              display: 'none',
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--mfe-text-muted)',
+              cursor: 'pointer',
+              padding: '6px'
+            }}
+            className="mobile-close-btn"
+            aria-label="Close Mobile Menu"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         {collapsed && (
@@ -404,6 +421,7 @@ export function HostLayout({ children, theme, onToggleTheme }) {
               <NavLink
                 key={item.path}
                 to={item.path}
+                onClick={() => setMobileOpen(false)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -616,6 +634,7 @@ export function HostLayout({ children, theme, onToggleTheme }) {
                 }}
               />
               <span
+                className="topbar-search-kbd"
                 style={{
                   position: 'absolute',
                   right: '10px',
@@ -638,7 +657,7 @@ export function HostLayout({ children, theme, onToggleTheme }) {
           </div>
 
           {/* Right: Actions, Theme Switch, Notifications, Profile */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div className="topbar-right-actions" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             {/* Mesh Gateway LIVE / OFF Master Toggle Button */}
             <button
               onClick={handleToggleAllApis}
@@ -678,6 +697,7 @@ export function HostLayout({ children, theme, onToggleTheme }) {
 
               {/* Status Label */}
               <span
+                className="mesh-indicator-text"
                 style={{
                   fontSize: '0.75rem',
                   fontWeight: 800,
@@ -809,7 +829,7 @@ export function HostLayout({ children, theme, onToggleTheme }) {
                 size={28}
                 status={currentUser ? "online" : "offline"}
               />
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: currentUser ? 'var(--mfe-text-primary)' : 'var(--mfe-primary)' }}>
+              <span className="topbar-user-name" style={{ fontSize: '0.75rem', fontWeight: 700, color: currentUser ? 'var(--mfe-text-primary)' : 'var(--mfe-primary)' }}>
                 {currentUser ? (currentUser.name?.split(' ')[0] || 'Account') : 'Guest'}
               </span>
             </button>
@@ -819,7 +839,7 @@ export function HostLayout({ children, theme, onToggleTheme }) {
         {/* Dynamic Micro-Frontend Viewport */}
         <main
           key={location.pathname}
-          className="mfe-animate-in"
+          className="mfe-animate-in mfe-main-content"
           style={{ flex: 1, padding: '28px 32px', maxWidth: '1440px', width: '100%', margin: '0 auto' }}
         >
           {children}
@@ -910,16 +930,57 @@ export function HostLayout({ children, theme, onToggleTheme }) {
         @media (max-width: 860px) {
           .mfe-sidebar {
             position: fixed !important;
-            transform: translateX(-100%);
+            transform: translateX(-100%) !important;
+            width: 270px !important;
+            box-shadow: 0 0 35px rgba(0, 0, 0, 0.55) !important;
           }
-          .mfe-sidebar-open {
+          .mfe-sidebar.mfe-sidebar-open {
             transform: translateX(0) !important;
           }
           .mfe-mobile-toggle {
             display: flex !important;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            min-height: 36px;
+            border-radius: var(--mfe-radius-md);
+            background: var(--mfe-bg-card);
+            border: 1px solid var(--mfe-border);
           }
-          .mesh-indicator {
+          .mobile-close-btn {
+            display: flex !important;
+          }
+          .sidebar-collapse-btn {
             display: none !important;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .mfe-main-content {
+            padding: 16px 14px !important;
+          }
+          .topbar-search-kbd {
+            display: none !important;
+          }
+          .topbar-user-name {
+            display: none !important;
+          }
+          .mesh-indicator-text {
+            display: none !important;
+          }
+        }
+
+        @media (max-width: 520px) {
+          header {
+            padding: 0 12px !important;
+            gap: 8px !important;
+          }
+          .topbar-right-actions {
+            gap: 8px !important;
+          }
+          .topbar-search-input {
+            font-size: 0.8125rem !important;
+            padding: 8px 12px 8px 34px !important;
           }
         }
       `}</style>

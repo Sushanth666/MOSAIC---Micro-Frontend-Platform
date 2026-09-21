@@ -598,3 +598,88 @@ button:active {
   }
 }
 
+/* ========================================================================= */
+/* Mobile Responsiveness Suite                                               */
+/* ========================================================================= */
+
+@media (max-width: 768px) {
+  /* Touch target standards */
+  button, a, input, select {
+    min-height: 38px;
+  }
+
+  /* Modals on Mobile: full fit with proper margins */
+  .mfe-modal-content {
+    width: calc(100vw - 24px) !important;
+    max-width: 100% !important;
+    margin: 12px !important;
+    max-height: calc(100vh - 32px) !important;
+    padding: 20px 16px !important;
+  }
+
+  /* Tables: smooth mobile touch scrolling */
+  div[style*="overflowX: auto"],
+  div[style*="overflow-x: auto"] {
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Page top header banners */
+  .mfe-page-enter {
+    gap: 16px !important;
+  }
+
+  /* Action trigger 2x2 grids stack on mobile */
+  .mfe-action-grid-mobile {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Telemetry metric gauges stack to 1 column on mobile */
+  .mfe-telemetry-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Table wrapper for smooth touch horizontal scrolling */
+  .mfe-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mfe-table-wrapper table {
+    min-width: 620px;
+  }
+
+  /* Mobile notification item rows */
+  .notif-row {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+}
+
+@media (max-width: 580px) {
+  /* Headline scaling */
+  h1 {
+    font-size: 1.375rem !important;
+  }
+
+  /* Dual buttons in top banners stack into columns */
+  .mfe-page-header-actions {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .mfe-page-header-actions > * {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Card padding on small phones */
+  .mfe-card {
+    padding: 16px !important;
+  }
+}
+
+
+

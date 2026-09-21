@@ -687,7 +687,7 @@ export default function DashboardApp({ standalone = false, onNavigate }) {
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="mfe-page-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Button
             size="sm"
             variant="secondary"
@@ -1210,7 +1210,7 @@ export default function DashboardApp({ standalone = false, onNavigate }) {
               </button>
             }
           >
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
+            <div className="mfe-telemetry-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
               {/* API Gateway Telemetry */}
               {(() => {
                 const s = getTelemetryMetricState('latency', isGatewayOff ? 0 : healthStats.apiLatency, isGatewayOff);
@@ -1387,7 +1387,7 @@ export default function DashboardApp({ standalone = false, onNavigate }) {
                   <span>PubSub Event Broadcasters</span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                <div className="mfe-action-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                   <Button
                     variant="secondary"
                     size="sm"
@@ -1456,7 +1456,7 @@ export default function DashboardApp({ standalone = false, onNavigate }) {
                   <span>Federated Remote Navigators</span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                <div className="mfe-action-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                   <button
                     type="button"
                     onClick={() => (onNavigate ? onNavigate('/users') : (window.location.pathname = '/users'))}

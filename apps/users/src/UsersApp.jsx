@@ -384,7 +384,7 @@ export default function UsersApp({ standalone = false }) {
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="mfe-page-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {/* RBAC Matrix Modal Trigger */}
           <Button
             size="sm"
@@ -707,7 +707,7 @@ export default function UsersApp({ standalone = false }) {
               </div>
             )}
 
-            <div style={{ overflowX: 'auto' }}>
+            <div className="mfe-table-wrapper" style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
                 <thead>
                   <tr style={{ background: 'var(--mfe-bg-surface)', borderBottom: '1px solid var(--mfe-border)' }}>

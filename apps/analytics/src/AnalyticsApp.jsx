@@ -165,7 +165,7 @@ export default function AnalyticsApp({ standalone = false }) {
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="mfe-page-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {/* Timeframe Controls */}
           <div
             style={{
