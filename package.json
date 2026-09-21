@@ -9,7 +9,8 @@
   ],
   "scripts": {
     "dev": "concurrently -k -c \"cyan,magenta,green,yellow,blue,red\" -n \"host,auth,dash,users,analy,notif\" \"npm run dev --workspace=@mfe/host\" \"npm run dev --workspace=@mfe/auth\" \"npm run dev --workspace=@mfe/dashboard\" \"npm run dev --workspace=@mfe/users\" \"npm run dev --workspace=@mfe/analytics\" \"npm run dev --workspace=@mfe/notifications\"",
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present && node -e \"const fs = require('fs'); fs.cpSync('apps/host/dist', 'dist', { recursive: true });\"",
+    "build:host": "npm run build --workspace=@mfe/host",
     "preview": "concurrently -k -c \"cyan,magenta,green,yellow,blue,red\" -n \"host,auth,dash,users,analy,notif\" \"npm run preview --workspace=@mfe/host\" \"npm run preview --workspace=@mfe/auth\" \"npm run preview --workspace=@mfe/dashboard\" \"npm run preview --workspace=@mfe/users\" \"npm run preview --workspace=@mfe/analytics\" \"npm run preview --workspace=@mfe/notifications\"",
     "clean": "node -e \"console.log('Cleaning builds...')\""
   },
