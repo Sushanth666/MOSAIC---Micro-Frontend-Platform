@@ -615,45 +615,6 @@ export function LoginPage({ initialMode = 'signin', onLoginSuccess, theme, onTog
             </div>
           )}
 
-          {/* ⚡ One-Click Instant Demo Access */}
-          <div style={{ margin: '0 28px 16px', padding: '14px 16px', borderRadius: 'var(--mfe-radius-md)', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(234, 88, 12, 0.06) 100%)', border: '1.5px solid rgba(245, 158, 11, 0.35)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 800, color: 'var(--mfe-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                <Zap size={14} /> Instant Demo Access
-              </div>
-              <Badge variant="primary" size="sm">No Password Needed</Badge>
-            </div>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--mfe-text-secondary)', marginBottom: '10px', lineHeight: 1.4 }}>
-              Click any role below to enter the Executive Dashboard with pre-configured RBAC permissions:
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-              {DEMO_USERS.map((u) => (
-                <button
-                  key={u.id}
-                  type="button"
-                  onClick={() => handleAuthenticate(u)}
-                  style={{
-                    padding: '8px 6px',
-                    borderRadius: 'var(--mfe-radius-sm)',
-                    border: '1px solid var(--mfe-border)',
-                    background: 'var(--mfe-bg-surface)',
-                    color: 'var(--mfe-text-primary)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '2px',
-                    transition: 'var(--mfe-transition)'
-                  }}
-                  className="topbar-btn"
-                >
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{u.name.split(' ')[0]}</span>
-                  <span style={{ fontSize: '0.625rem', color: u.role === 'Admin' ? 'var(--mfe-primary)' : u.role === 'Editor' ? 'var(--mfe-accent)' : 'var(--mfe-text-muted)', fontWeight: 800 }}>{u.role}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* =================================================== */}
           {/* TAB 1: SIGN IN FORM                                 */}
           {/* =================================================== */}
