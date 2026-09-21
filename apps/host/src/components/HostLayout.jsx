@@ -293,7 +293,7 @@ export function HostLayout({ children, theme, onToggleTheme }) {
           display: 'flex',
           flexDirection: 'column',
           zIndex: 999,
-          position: mobileOpen ? 'fixed' : 'sticky',
+          position: 'fixed',
           top: 0,
           bottom: 0,
           left: 0,
@@ -568,7 +568,17 @@ export function HostLayout({ children, theme, onToggleTheme }) {
       </aside>
 
       {/* Main Content Workspace */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <div
+        className="mfe-main-workspace"
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minWidth: 0,
+          marginLeft: collapsed ? '80px' : '260px',
+          transition: 'margin-left 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+        }}
+      >
         {/* Top Navbar */}
         <header
           style={{
@@ -928,6 +938,9 @@ export function HostLayout({ children, theme, onToggleTheme }) {
           transform: scale(1.15);
         }
         @media (max-width: 860px) {
+          .mfe-main-workspace {
+            margin-left: 0 !important;
+          }
           .mfe-sidebar {
             position: fixed !important;
             transform: translateX(-100%) !important;
