@@ -38,9 +38,9 @@ export default function AuthApp({ onAuthSuccess, standalone = false }) {
   const [showMatrix, setShowMatrix] = useState(false);
   const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
-      return document.documentElement.getAttribute('data-theme') || localStorage.getItem('mfe_theme') || 'dark';
+      return document.documentElement.getAttribute('data-theme') || localStorage.getItem('mfe_theme_pref') || 'light';
     }
-    return 'dark';
+    return 'light';
   });
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function AuthApp({ onAuthSuccess, standalone = false }) {
 
     // Observe data-theme attribute on documentElement
     const observer = new MutationObserver(() => {
-      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
       setTheme(current);
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });

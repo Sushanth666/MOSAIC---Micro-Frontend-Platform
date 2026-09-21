@@ -15,7 +15,7 @@ export function LogoutModal({
   user,
   onCancel,
   onConfirm,
-  theme = 'dark'
+  theme = 'light'
 }) {
   const isLight = theme === 'light' || (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'light');
 

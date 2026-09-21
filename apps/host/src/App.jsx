@@ -181,13 +181,16 @@ function HostRoutes({ theme, toggleTheme }) {
 export default function App() {
   const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('mfe_theme') || 'dark';
+      const explicit = localStorage.getItem('mfe_theme_pref');
+      if (explicit === 'dark' || explicit === 'light') return explicit;
+      return 'light';
     }
-    return 'dark';
+    return 'light';
   });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('mfe_theme_pref', theme);
     localStorage.setItem('mfe_theme', theme);
     eventBus.emit(MFE_EVENTS.THEME_CHANGED, { theme });
   }, [theme]);
