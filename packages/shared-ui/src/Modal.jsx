@@ -28,6 +28,7 @@ export function Modal({
 
   return (
     <div
+      className="mfe-modal-backdrop"
       style={{
         position: 'fixed',
         inset: 0,
@@ -44,6 +45,7 @@ export function Modal({
       onClick={onClose}
     >
       <div
+        className="mfe-modal-content"
         style={{
           width: '100%',
           maxWidth,

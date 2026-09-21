@@ -107,7 +107,13 @@
   padding: 0;
 }
 
+html {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
+  width: 100%;
   font-family: var(--mfe-font-sans);
   background-color: var(--mfe-bg-base);
   color: var(--mfe-text-primary);
@@ -609,12 +615,15 @@ button:active {
   }
 
   /* Modals on Mobile: full fit with proper margins */
+  .mfe-modal-backdrop {
+    padding: 12px !important;
+  }
+
   .mfe-modal-content {
     width: calc(100vw - 24px) !important;
     max-width: 100% !important;
-    margin: 12px !important;
-    max-height: calc(100vh - 32px) !important;
-    padding: 20px 16px !important;
+    margin: 0 !important;
+    max-height: calc(100vh - 24px) !important;
   }
 
   /* Tables: smooth mobile touch scrolling */
