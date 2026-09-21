@@ -519,6 +519,66 @@ export default function DashboardApp({ standalone = false, onNavigate }) {
     setTimeout(() => setActionNotice(''), 3500);
   };
 
+  const handleTriggerSecurityScan = () => {
+    mockApi.logActivity({
+      user: currentUser?.name || 'Platform Admin',
+      action: 'executed zero-trust security audit across 5 federated remotes',
+      type: 'security'
+    });
+    mockApi.addNotification({
+      title: 'Zero-Trust Audit Verified',
+      message: 'All 5 micro-frontend remotes verified with valid HMAC tokens.',
+      category: 'Security',
+      priority: 'success'
+    });
+    setDispatchReceipt({
+      channel: 'mfe:security:audit',
+      time: new Date().toLocaleTimeString(),
+      latency: '0.14ms',
+      subscribers: 5
+    });
+    setActionNotice('Security audit completed: 5/5 remotes verified');
+    setTimeout(() => setActionNotice(''), 3500);
+  };
+
+  const handleFlushMeshCache = () => {
+    eventBus.emit(MFE_EVENTS.METRICS_REFRESH, { action: 'cache:invalidate', timestamp: Date.now() });
+    mockApi.logActivity({
+      user: currentUser?.name || 'Platform Admin',
+      action: 'invalidated cross-remote distributed cache buffers',
+      type: 'system'
+    });
+    setDispatchReceipt({
+      channel: 'mfe:cache:invalidate',
+      time: new Date().toLocaleTimeString(),
+      latency: '0.08ms',
+      subscribers: 5
+    });
+    setActionNotice('Distributed cache invalidated across all remotes');
+    setTimeout(() => setActionNotice(''), 3500);
+  };
+
+  const handleBroadcastGlobalToast = () => {
+    eventBus.emit(MFE_EVENTS.GLOBAL_TOAST, {
+      message: 'Platform update broadcast from Cross-Module Action Console',
+      type: 'info'
+    });
+    mockApi.addNotification({
+      title: 'Global Announcement Dispatched',
+      message: 'Broadcast notification sent to all active sessions across mesh.',
+      category: 'System',
+      priority: 'info'
+    });
+    setDispatchReceipt({
+      channel: 'mfe:system:toast',
+      time: new Date().toLocaleTimeString(),
+      latency: '0.19ms',
+      subscribers: 5
+    });
+    setActionNotice('Global announcement broadcasted to all remotes');
+    setTimeout(() => setActionNotice(''), 3500);
+  };
+
   const handleSimulateCustomActivity = () => {
     const mockActions = [
       { action: 'triggered automated cross-MFE integration test suite', type: 'system' },
@@ -1338,14 +1398,187 @@ export default function DashboardApp({ standalone = false, onNavigate }) {
             title="Cross-Module Action Triggers"
             subtitle="Emit asynchronous events directly into other micro-frontend components"
             icon={Zap}
-            style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
             action={
-              <Badge variant="primary" size="sm">
-                EventBus v2.4 • Active
-              </Badge>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsDispatcherOpen(true)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '3px 9px',
+                    borderRadius: 'var(--mfe-radius-sm)',
+                    background: 'rgba(99, 102, 241, 0.12)',
+                    border: '1px solid rgba(99, 102, 241, 0.35)',
+                    color: 'var(--mfe-primary)',
+                    fontSize: '0.6875rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  title="Open Custom JSON Payload Dispatcher modal"
+                >
+                  <Terminal size={12} />
+                  <span>Custom Payload</span>
+                </button>
+                <Badge variant="primary" size="sm">
+                  EventBus v2.4 • Active
+                </Badge>
+              </div>
             }
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {/* Feature 1: Live Bus Telemetry & Pipeline Ribbon */}
+              <div
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: 'var(--mfe-radius-md)',
+                  background: 'var(--mfe-bg-surface)',
+                  border: '1px solid var(--mfe-border)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Activity size={12} color="var(--mfe-accent)" />
+                    <span
+                      style={{
+                        fontSize: '0.6875rem',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        color: 'var(--mfe-text-muted)'
+                      }}
+                    >
+                      Bus Telemetry & Pipeline Stream
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span className="mfe-pulse-dot" style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--mfe-success)' }} />
+                    <span style={{ fontSize: '0.6875rem', color: 'var(--mfe-success)', fontWeight: 700 }}>Mesh Connected</span>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(4, 1fr)',
+                    gap: '6px',
+                    fontSize: '0.6875rem',
+                    textAlign: 'center'
+                  }}
+                >
+                  <div style={{ padding: '4px 6px', borderRadius: '4px', background: 'var(--mfe-bg-card)', border: '1px solid var(--mfe-border-subtle)' }}>
+                    <div style={{ color: 'var(--mfe-text-muted)', fontSize: '0.625rem' }}>Topics</div>
+                    <div style={{ fontWeight: 800, color: 'var(--mfe-text-primary)' }}>6 Registered</div>
+                  </div>
+                  <div style={{ padding: '4px 6px', borderRadius: '4px', background: 'var(--mfe-bg-card)', border: '1px solid var(--mfe-border-subtle)' }}>
+                    <div style={{ color: 'var(--mfe-text-muted)', fontSize: '0.625rem' }}>Avg Latency</div>
+                    <div style={{ fontWeight: 800, color: 'var(--mfe-success)' }}>&lt;0.2ms</div>
+                  </div>
+                  <div style={{ padding: '4px 6px', borderRadius: '4px', background: 'var(--mfe-bg-card)', border: '1px solid var(--mfe-border-subtle)' }}>
+                    <div style={{ color: 'var(--mfe-text-muted)', fontSize: '0.625rem' }}>Delivery</div>
+                    <div style={{ fontWeight: 800, color: 'var(--mfe-primary)' }}>100% Ack</div>
+                  </div>
+                  <div style={{ padding: '4px 6px', borderRadius: '4px', background: 'var(--mfe-bg-card)', border: '1px solid var(--mfe-border-subtle)' }}>
+                    <div style={{ color: 'var(--mfe-text-muted)', fontSize: '0.625rem' }}>Remotes</div>
+                    <div style={{ fontWeight: 800, color: 'var(--mfe-accent)' }}>5 Nodes</div>
+                  </div>
+                </div>
+
+                {/* Live Dispatch Receipt if dispatched */}
+                {dispatchReceipt && (
+                  <div
+                    style={{
+                      padding: '5px 8px',
+                      borderRadius: '4px',
+                      background: 'rgba(16, 185, 129, 0.08)',
+                      border: '1px solid rgba(16, 185, 129, 0.25)',
+                      color: 'var(--mfe-success)',
+                      fontSize: '0.6875rem',
+                      fontFamily: 'var(--mfe-font-mono)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <span>ACK: [{dispatchReceipt.channel}] in {dispatchReceipt.latency}</span>
+                    <span style={{ opacity: 0.75 }}>{dispatchReceipt.time}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Feature 2: Instant Payload Presets */}
+              <div>
+                <div
+                  style={{
+                    fontSize: '0.6875rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    color: 'var(--mfe-text-muted)',
+                    marginBottom: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Zap size={12} color="var(--mfe-primary)" />
+                  <span>Instant Payload Presets</span>
+                </div>
+
+                <div className="mfe-action-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={ShieldCheck}
+                    onClick={handleTriggerSecurityScan}
+                    title="Broadcast zero-trust security audit across 5 remotes"
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px' }}
+                  >
+                    Security Audit
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={HardDrive}
+                    onClick={handleFlushMeshCache}
+                    title="Flush distributed cross-remote cache buffers"
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px' }}
+                  >
+                    Flush Cache
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={Radio}
+                    onClick={handleBroadcastGlobalToast}
+                    title="Broadcast global announcement to all active sessions"
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px' }}
+                  >
+                    Global Toast
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={Activity}
+                    onClick={handlePingRemotes}
+                    disabled={isPinging}
+                    title="Ping all 5 federated remote nodes and measure latency"
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '8px 12px' }}
+                  >
+                    {isPinging ? 'Pinging...' : 'Heartbeat Ping'}
+                  </Button>
+                </div>
+              </div>
+
               {/* Quick Feedback Toast if active */}
               {actionNotice && (
                 <div
